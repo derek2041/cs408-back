@@ -13,15 +13,18 @@ class UsersController < ApplicationController
 
 	# Create a new user
 	def new
+		# Retrieve request body
+		data = JSON.parse(request.body.read)
+
 		# Check if the username already exists in the table
-		check = User.find_by username: params[:username]
+		check = User.find_by username: data["username"]
 
 		# If result is nil, create the user and save to database
 		if check.blank?
-			hashed_password = BCrypt::Password.create params[:password] # Password passed in POST request
+			hashed_password = BCrypt::Password.create data["password"] # Password passed in POST request
 
 			# Creates the user entry with the passed username nad hashed_password
-			user = User.create(username: params[:username], password: hashed_password)
+			user = User.create(username: data["username"], password: hashed_password)
 			
 			# Commit user to database	
 			user.save!
@@ -40,8 +43,11 @@ class UsersController < ApplicationController
 
 	# Login a user
 	def login
+		# Retrieve request body
+		data = JSON.parse(request.body.read)
+
 		# Retrieve user entry from database based on passed username parameter
-		check = User.find_by username: params[:username]
+		check = User.find_by username: data["username"]
 
 		# If user was found, verify passed password to hashed entry
 		if check.present?
@@ -49,7 +55,7 @@ class UsersController < ApplicationController
 			hashed = BCrypt::Password.new check.password
 			
 			# Compare BCrypt hash to passed password, if true send user info back to front end
-			if hashed == params[:password]
+			if hashed == data["password"]
 				# Create success message JSON and send
 				message = {status: "success", username: check.username}
 				render json: message
