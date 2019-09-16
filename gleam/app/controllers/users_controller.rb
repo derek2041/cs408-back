@@ -66,6 +66,9 @@ class UsersController < ApplicationController
 				message = {status: "error", message: "Incorrect Username or Password"}
 				render json: message
 			end
+
+		# TODO ADD REPSONSE FOR NO USER FOUND
+
 		end
 	end
 end
