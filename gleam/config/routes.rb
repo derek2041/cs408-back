@@ -8,5 +8,6 @@ Rails.application.routes.draw do
 
 	# Routes related to Posts
 	post 'posts', to: 'posts#index'
+	get 'posts/new', to: 'posts#new'
 	
 end
