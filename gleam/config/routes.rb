@@ -10,5 +10,9 @@ Rails.application.routes.draw do
 	post 'posts', to: 'posts#index'
 	post 'posts/new', to: 'posts#new'
 	get  'posts/view', to: 'posts#view'
-	get  'posts/dev', to: 'posts#dev'	
+	get  'posts/dev', to: 'posts#dev'
+	
+	# Routes related to Bookmarks
+	post 'bookmarks/new', to: 'bookmarks#new'
+	post 'bookmarks/view', to: 'bookmarks#view'	
 end
