@@ -46,9 +46,10 @@ class PostsController < ApplicationController
 					# If valid and no query, return all the users posts
 					posts = User.find_by(username: data["username"])
 						    .posts.order('updated_at DESC')
-						    .paginate(page: data["pageNumber"], per_page: 10)
-
+				
 					post_count = posts.length
+					posts = posts.paginate(page: data["pageNumber"], per_page: 10)
+
 					return render json: {count: [count: post_count], data: posts}
 
 				# Search Query attached
@@ -57,9 +58,10 @@ class PostsController < ApplicationController
 					posts = User.find_by(username: data["username"])
 						    .posts.where("lower(title) LIKE ?", "%" + data["searchQuery"] + "%")
 						    .order('updated_at DESC')
-						    .paginate(page: data["pageNumber"], per_page: 10)
-
+					
 					post_count = posts.length
+					posts = posts.paginate(page: data["pageNumber"], per_page: 10)
+
 					return render json: {count: [count: post_count], data: posts}
 
 				end
@@ -111,6 +113,7 @@ end
 
 
 # DEFECTS
-# - no check that retrieved user exists
+# - no check that retrieved user exists in new route
 # - no messages for empty requests
+# - posts pagetype not paginating
 
