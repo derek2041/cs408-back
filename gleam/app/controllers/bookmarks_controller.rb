@@ -29,7 +29,7 @@ class BookmarksController < ApplicationController
 		# TODO remove from public access
 		data = JSON.parse(request.body.read)
 		user = User.find_by(username: data["username"])
-		puts user.id	
+			
 		bookmarks = Post.find_by_sql ["SELECT * FROM bookmarks, posts WHERE bookmarks.post_id = posts.id AND bookmarks.user_id = ?", user.id]
 		render json: bookmarks
 		#render json: Post.joins("INNER JOIN bookmarks ON bookmarks.post_id = posts.id")
