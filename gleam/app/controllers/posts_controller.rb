@@ -98,20 +98,18 @@ class PostsController < ApplicationController
 				# Search Query in body
 				else
 					# Filter bookmarks by search query
-						
-					#bookmarks = Post.find_by_sql [sql_with_query]
 					bookmarks= Post.find_by_sql ["SELECT * FROM bookmarks, posts 
 					WHERE bookmarks.post_id = posts.id AND bookmarks.user_id = ? 
 					AND lower(title) LIKE ?", user.id, "%" + data["searchQuery"].downcase + "%"]
-										
-	
+									
+					# Retrieve list length for front-end pagination		
 					post_count = bookmarks.length
 
+					# Retrieve paginated results from database - unique for bookmarks
 					bookmarks_search_paginate = Post.paginate_by_sql(["SELECT * FROM bookmarks, posts 
 					WHERE bookmarks.post_id = posts.id AND bookmarks.user_id = ? 
 					AND lower(title) LIKE ?", user.id, "%" + data["searchQuery"].downcase + "%"], page: data["pageNumber"], per_page: 10)
 
-					#bookmarks = bookmarks.paginate(page: data["pageNumber"], per_page: 10)
 					return render json: {count: [count: post_count], data: bookmarks_search_paginate}
 				end
 			end	
@@ -154,7 +152,15 @@ class PostsController < ApplicationController
 
 	# Route for retrieving post detailed information based on ID of post, increments post views
 	def view
-
+		
+		##########################################
+		# POST BODY PARAMETERS
+		# post_id
+		##########################################
+		
+		data = JSON.parse(request.body.read)
+		post = Post.find(data["post_id"])
+		return render json: post		
 	end
 
 	# Dev route for viewing all posts in the database, not acessible in production
@@ -171,3 +177,5 @@ end
 # - date["pageNumber"] -> data["pageNumber"]
 # - paginate does not work on array for bookmars -> refactor to paginate_by_sql
 # - find_by_sql "Too few arguments error"
+# - view route doesnt verify valid post id
+# - view route doesn't properly increment post views
