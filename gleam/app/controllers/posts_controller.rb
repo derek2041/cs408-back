@@ -66,7 +66,6 @@ class PostsController < ApplicationController
 					posts = posts.paginate(page: data["pageNumber"], per_page: 10)
 
 					return render json: {count: [count: post_count], data: posts}
-
 				end
 			else
 				# If invalid, return an error message
@@ -170,12 +169,12 @@ class PostsController < ApplicationController
 end
 
 # DEFECTS
-# - no check that retrieved user exists in new route
-# - no messages for empty requests
-# - posts pagetype not paginating
+# - no check that retrieved user exists in new route #
+# - no messages for empty requests #
+# - posts pagetype not paginating #
 # - posts can share the same title (intended?)
-# - date["pageNumber"] -> data["pageNumber"]
-# - paginate does not work on array for bookmars -> refactor to paginate_by_sql
-# - find_by_sql "Too few arguments error"
-# - view route doesnt verify valid post id
-# - view route doesn't properly increment post views
+# - date["pageNumber"] -> data["pageNumber"] #
+# - paginate does not work on array for bookmarks -> refactor to paginate_by_sql #
+# - find_by_sql "Too few arguments error" #
+# - view route doesnt verify valid post id #
+# - view route doesn't properly increment post views #

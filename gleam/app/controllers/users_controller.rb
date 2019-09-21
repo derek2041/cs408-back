@@ -4,11 +4,13 @@ class UsersController < ApplicationController
 
 	# Temporary route to view users saved in databsse
 	def index
-		# Retrieve all entries in user table
-		tmp = User.all
+		if Rails.env.development?
+			# Retrieve all entries in user table
+			tmp = User.all
 
-		# Render as JSON in curl request
-		render json: tmp
+			# Render as JSON in curl request
+			render json: tmp
+		end
 	end
 
 	# Create a new user

@@ -27,12 +27,14 @@ class BookmarksController < ApplicationController
 	
 	def view
 		# TODO remove from public access
-		data = JSON.parse(request.body.read)
-		user = User.find_by(username: data["username"])
+		if Rails.env.development?
+			data = JSON.parse(request.body.read)
+			user = User.find_by(username: data["username"])
 			
-		bookmarks = Post.find_by_sql ["SELECT * FROM bookmarks, posts WHERE bookmarks.post_id = posts.id AND bookmarks.user_id = ?", user.id]
-		render json: bookmarks
-		#render json: Post.joins("INNER JOIN bookmarks ON bookmarks.post_id = posts.id")
+			bookmarks = Post.find_by_sql ["SELECT * FROM bookmarks, posts WHERE bookmarks.post_id = posts.id AND bookmarks.user_id = ?", user.id]
+			render json: bookmarks
+			#render json: Post.joins("INNER JOIN bookmarks ON bookmarks.post_id = posts.id")
+		end
 	end
 end
 
