@@ -7,3 +7,4 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 
 User.create(username: 'test_user', password: 'test_password')
+Post.create(title: 'My first post', content: 'Welcome to my first post', post_views: '3', user_id: '1') 
