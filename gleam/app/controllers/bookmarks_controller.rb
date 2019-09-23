@@ -13,6 +13,8 @@ class BookmarksController < ApplicationController
 
 		# Validate user credentials
 		if User.is_validated(data)
+
+			# TODO ADD CHECK FOR PREVIOUS BOOKMARK OF SAME POST
 			bookmark = Bookmark.new(user_id: user.id, post_id: data["post_id"])
 			bookmark.save!
 			
