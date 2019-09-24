@@ -15,6 +15,13 @@ class UsersController < ApplicationController
 
 	# Create a new user
 	def new
+
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		# password
+		##########################################
+
 		# Retrieve request body
 		data = JSON.parse(request.body.read)
 
@@ -45,6 +52,13 @@ class UsersController < ApplicationController
 
 	# Login a user
 	def login
+
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		# password
+		##########################################
+
 		# Retrieve request body
 		data = JSON.parse(request.body.read)
 
@@ -74,4 +88,74 @@ class UsersController < ApplicationController
 			render json: message
 		end
 	end
+
+	# Delete a User
+	def delete
+
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		# password
+		##########################################
+
+		data = JSON.parse(request.body.read)
+		user = User.find_by(username: data["username"])	
+	
+		# Validate User Credentials	
+		if User.is_validated(data)
+				
+			# Retrieve all the posts made by the user
+			posts = user.posts
+			
+			# For each post retrieve all bookmark references from the bookmarks table
+			posts.each do |p|
+				bookmarks = Bookmark.where(post_id: p.id)
+				
+				# Delete each bookmark reference to the post to be deleted
+				bookmarks.each do |b|
+					Bookmark.destroy(b.id)
+				end
+			end
+
+			# Delete the user, posts are destroyed with the dependent association
+			User.destroy(user.id)
+
+			message = {status: "success", message: "User deleted successfully"}
+			return render json: message
+		
+		else
+			message = {status: "error", message: "Incorrect Username or Password"}
+			return render json: message
+		end
+	end
+
+	# Delete a User (DEV ROUTE)
+	def delete_dev
+
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		##########################################
+		
+		if Rails.env.development?
+			data = JSON.parse(request.body.read)
+			user = User.find_by(username: data["username"])
+			# User.destroy(user.id)
+
+			posts = user.posts
+			
+			posts.each do |p|
+				bookmarks = Bookmark.where(post_id: p.id)
+				bookmarks.each do |b|
+					Bookmark.destroy(b.id)
+				end				
+			end
+
+			User.destroy(user.id)
+
+			message = {status: "success", message: "User deleted successfully"}
+			return render json: message	
+		end
+	end
+
 end
