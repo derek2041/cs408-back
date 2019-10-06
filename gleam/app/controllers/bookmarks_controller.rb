@@ -8,13 +8,22 @@ class BookmarksController < ApplicationController
 		# Retrieve request body
 		data = JSON.parse(request.body.read)
 	
-		#Retrieve user making post
+		# Retrieve user making post
 		user = User.find_by(username: data["username"])
 
 		# Validate user credentials
 		if User.is_validated(data)
 
-			# TODO ADD CHECK FOR PREVIOUS BOOKMARK OF SAME POST
+			# Retrieve a bookmark entry to check for existing
+			check = Bookmark.find_by(user_id: user.id, post_id: data["post_id"])
+
+			# Check if bookmark entry already exists
+			if check.present?
+				message = {status: "error", message: "Bookmark already exists"}
+				return render json: message
+			end
+
+			# Create new bookmark entry
 			bookmark = Bookmark.new(user_id: user.id, post_id: data["post_id"])
 			bookmark.save!
 			
@@ -26,9 +35,31 @@ class BookmarksController < ApplicationController
 			render json: message
 		end
 	end
+
+	def delete
+
+		# Retrieve Request Body
+		data = JSON.parse(request.body.read)
+	
+		# Retrieve user deleting entry
+		user = User.find_by(username: data["username"])
+
+		# Validate user making delete request
+		if User.is_validated(data)
+						
+			# Delete table entry for bookmark
+			Bookmark.find_by(user_id: user.id, post_id: data["post_id"]).delete
+	
+			message = {status: "success", message: "Bookmark deleted"}
+			return render json: message	
+		end
+
+		message = {status: "error", message: "Incorrect Credentials"}
+		return render json: message
+	end
 	
 	def view
-		# TODO remove from public access
+	
 		if Rails.env.development?
 			data = JSON.parse(request.body.read)
 			user = User.find_by(username: data["username"])
@@ -42,4 +73,4 @@ class BookmarksController < ApplicationController
 end
 
 # DEFECTS
-# - Doesn't check if user object is null
+# - Can add multiple bookmarks of the same post -> FIX: added check in bookmark table for entry

@@ -1,5 +1,5 @@
 class PostsController < ApplicationController
-	
+
 	# Main post route for homepage, posts, bookmarks, and comments
 	def index
 
@@ -20,7 +20,7 @@ class PostsController < ApplicationController
 			# Check if there is an attached search query			
 			if data["searchQuery"] == ""
 				# No query, return all posts descending by post time (paginated)
-				posts = Post.order('updated_at DESC')
+				posts = Post.order('created_at DESC')
 					   .paginate(page: data["pageNumber"], per_page: 10)
 
 				# Retrieve post count
@@ -31,11 +31,11 @@ class PostsController < ApplicationController
 			else
 				# Find titles with the search query anywhere in the title
 				posts = Post.where("lower(title) LIKE ?", "%" + data["searchQuery"].downcase + "%")
-					   .order('updated_at DESC')
+					   .order('created_at DESC')
 					   .paginate(page: data["pageNumber"], per_page: 10)	
 
 				# Retrieve post count
-				post_count = Post.all.length
+				post_count = posts.length
 				return render json: {count: [count: post_count], data: posts}
 			end
 		end	
@@ -48,7 +48,7 @@ class PostsController < ApplicationController
 				if data["searchQuery"] == ""
 					# If valid and no query, return all the users posts
 					posts = User.find_by(username: data["username"])
-						    .posts.order('updated_at DESC')
+						    .posts.order('created_at DESC')
 				
 					post_count = posts.length
 					posts = posts.paginate(page: data["pageNumber"], per_page: 10)
@@ -60,7 +60,7 @@ class PostsController < ApplicationController
 					# Filter user posts by query
 					posts = User.find_by(username: data["username"])
 						    .posts.where("lower(title) LIKE ?", "%" + data["searchQuery"].downcase + "%")
-						    .order('updated_at DESC')
+						    .order('created_at DESC')
 					
 					post_count = posts.length
 					posts = posts.paginate(page: data["pageNumber"], per_page: 10)
@@ -85,6 +85,7 @@ class PostsController < ApplicationController
 				if data["searchQuery"] == ""
 					# If valid and no query, return all user bookmarks
 					sql = "SELECT * FROM bookmarks, posts WHERE bookmarks.post_id = posts.id AND bookmarks.user_id = " + user.id.to_s
+					sql = sql + " ORDER BY posts.created_at DESC"
 					bookmarks = Post.find_by_sql [sql]
 					
 					# Retrieve number of posts for front-end pagination
@@ -107,7 +108,7 @@ class PostsController < ApplicationController
 					# Retrieve paginated results from database - unique for bookmarks
 					bookmarks_search_paginate = Post.paginate_by_sql(["SELECT * FROM bookmarks, posts 
 					WHERE bookmarks.post_id = posts.id AND bookmarks.user_id = ? 
-					AND lower(title) LIKE ?", user.id, "%" + data["searchQuery"].downcase + "%"], page: data["pageNumber"], per_page: 10)
+					AND lower(title) LIKE ? ORDER BY posts.created_at DESC", user.id, "%" + data["searchQuery"].downcase + "%"], page: data["pageNumber"], per_page: 10)
 
 					return render json: {count: [count: post_count], data: bookmarks_search_paginate}
 				end
@@ -154,12 +155,115 @@ class PostsController < ApplicationController
 		
 		##########################################
 		# POST BODY PARAMETERS
+		# username
+		# password
 		# post_id
 		##########################################
 		
+		# Parse data in request
 		data = JSON.parse(request.body.read)
+	
+		# Create user variable and check credentials
+		user = nil
+		if data["username"] != "null" && data["password"] != "null" && User.is_validated(data)
+			user = User.find_by(username: data["username"])	
+		end		
+	
+		# Retrieve post data from Post table
 		post = Post.find(data["post_id"])
-		return render json: post		
+
+		# Update post views
+		post.post_views = post.post_views + 1
+		post.save
+
+		# Check if User created post
+		creator = false
+		if user != nil && post.user_id == user.id
+			creator = true
+		end
+
+		# Check if User has post bookmarked
+		bookmarked = false
+		if user != nil && Bookmark.find_by(user_id: user.id, post_id: post.id)
+			bookmarked = true
+		end
+		
+		# Create JSON metadata object
+		metadata = {:creator => creator, :bookmarked => bookmarked}
+
+		# Render JSON and metadata
+		return render json: {:metadata => metadata, :post => post}		
+	end
+
+	def edit
+
+		##########################################
+		# POST BODY PARAMETERS
+		# username
+		# password
+		# title
+		# content
+		# post_id
+		##########################################
+
+		# Retrieve request body
+		data = JSON.parse(request.body.read)
+
+		# Retrieve User entry and validate creentials
+		user = User.find_by(username: data["username"])
+		
+		if User.is_validated(data)
+			
+			# Retrieve Post entry
+			post = Post.find_by(user_id: user.id, id: data["post_id"])
+			post.title = data["title"]
+			post.content = data["content"]
+			post.save
+			
+			message = {status: "success", message: "Post updated successfully"}
+			return render json: message
+
+		end
+
+		message = {status: "error", message: "Incorrect Credentials"}
+		return render json: message
+
+	end
+
+	def delete
+
+		##########################################
+		# POST BODY PARAMETERS
+		# username
+		# password
+		# post_id
+		##########################################
+
+		# Retrieve post data
+		data = JSON.parse(request.body.read)
+
+		# Verify User
+		user = User.find_by(username: data["username"])
+		
+		if User.is_validated(data)
+			
+			# Retrieve bookmarks that match post to delete
+			bookmarks = Bookmark.where(post_id: data["post_id"])
+			
+			# Delete post entries in bookmark table
+			bookmarks.each do |b|
+				Bookmark.destroy(b.id)
+			end
+				
+			# Delete Post
+			Post.destroy(data["post_id"])
+
+			message = {status: "success", message: "Post deleted successfully"}
+			return render json: message
+		end
+
+		message = {status: "error", message: "Incorrect Credentials"}
+		return render json: message	
 	end
 
 	# Dev route for viewing all posts in the database, not acessible in production
@@ -167,14 +271,5 @@ class PostsController < ApplicationController
 		render json: Post.all
 	end
 end
-
 # DEFECTS
-# - no check that retrieved user exists in new route #
-# - no messages for empty requests #
-# - posts pagetype not paginating #
-# - posts can share the same title (intended?)
-# - date["pageNumber"] -> data["pageNumber"] #
-# - paginate does not work on array for bookmarks -> refactor to paginate_by_sql #
-# - find_by_sql "Too few arguments error" #
-# - view route doesnt verify valid post id #
-# - view route doesn't properly increment post views #
+# - Viewing post would not retrieve information unless user was logged in -> FIX: added check for null user to go through
