@@ -85,9 +85,9 @@ class CommentsController < ApplicationController
 		if User.is_validated(data)
 
 			# Retrieve comment entry and update content
-			comment = Comment.find_by(comment_id: data["comment_id"])
+			comment = Comment.find_by(id: data["comment_id"])
 			comment.content = data["content"]
-			comment.save
+			comment.save!
 	
 			message = {status: "success", message: "Comment updated successfully"}
 			return render json: message
