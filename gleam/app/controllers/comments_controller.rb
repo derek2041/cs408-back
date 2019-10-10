@@ -1,5 +1,6 @@
 class CommentsController < ApplicationController
 
+	# Default route for handling comments, can retrieve post comments and My Comments page
 	def index
 
 		###########################################
@@ -48,6 +49,7 @@ class CommentsController < ApplicationController
 		end	
 	end
 
+	# Route to create a new comment on a post
 	def new
 
 		###########################################
@@ -72,7 +74,7 @@ class CommentsController < ApplicationController
 			# Commit Comment
 			comment.save!
 
-			message = {status: "success", message: "Comment created successfully"}
+			message = {status: "success", message: "Comment created successfully", comment_id: comment.id}
 			return render json: message
 
 		end
@@ -81,6 +83,7 @@ class CommentsController < ApplicationController
 		return render json: message
 	end
 	
+	# Route to allow user to edit their comments
 	def edit
 
 		###########################################
@@ -112,6 +115,7 @@ class CommentsController < ApplicationController
 		return render json: message
 	end
 
+	# Route to allow a user to delete their comments
 	def delete
 
 		###########################################
@@ -140,6 +144,7 @@ class CommentsController < ApplicationController
 		return render json: message
 	end
 
+	# Route to increment view count of a comment
 	def view
 
 		###########################################

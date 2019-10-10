@@ -165,7 +165,7 @@ class PostsController < ApplicationController
 	
 		# Create user variable and check credentials
 		user = nil
-		if data["username"] != "null" && data["password"] != "null" && User.is_validated(data)
+		if data["username"] != "null" && data["password"] != "null" && User.is_validated(data) && data["username"] != nil && data["password"] != nil
 			user = User.find_by(username: data["username"])	
 		end		
 	
@@ -195,6 +195,7 @@ class PostsController < ApplicationController
 		return render json: {:metadata => metadata, :post => post}		
 	end
 
+	# Route to edit a user's post
 	def edit
 
 		##########################################
@@ -230,6 +231,7 @@ class PostsController < ApplicationController
 
 	end
 
+	# Route to delete a user's post
 	def delete
 
 		##########################################
@@ -273,3 +275,4 @@ class PostsController < ApplicationController
 end
 # DEFECTS
 # - Viewing post would not retrieve information unless user was logged in -> FIX: added check for null user to go through
+# - Additional edge case where nil username and password would not load page -> FIX: added check for nil fields to still retrieve post

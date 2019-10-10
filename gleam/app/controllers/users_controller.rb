@@ -89,6 +89,42 @@ class UsersController < ApplicationController
 		end
 	end
 
+	def change_password
+		
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		# password
+		# new_password
+		##########################################
+
+		# Retrieve request body
+		data = JSON.parse(request.body.read)
+
+		# Validate User credentials
+		if User.is_validated(data)
+			
+			# Retrieve User object to update
+			user = User.find_by(username: data["username"])
+			
+			# Correct Credentials, hash new_password and update database	
+			new_hashed_password = BCrypt::Password.create data["new_password"]
+			
+			user.password = new_hashed_password
+			user.save
+
+			# Password updated, send success message
+			message = {status: "success", message: "Password changed successfully"}	
+			return render json: message
+
+		end
+		
+		# Incorrect Credentials, return error
+		message = {status: "error", message: "Incorrect Credentials"}
+		render json: message		
+	end
+
+
 	# Delete a User
 	def delete
 
@@ -159,3 +195,5 @@ class UsersController < ApplicationController
 	end
 
 end
+# DEFECTS
+# is_validated function requires password field but payload sent old_password -> FIX: Modified payload

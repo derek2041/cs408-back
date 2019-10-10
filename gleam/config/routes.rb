@@ -5,8 +5,9 @@ Rails.application.routes.draw do
 	get 'users', to: 'users#index'
 	post 'users/login', to: 'users#login'
 	post 'users/new', to: 'users#new'
+	post 'users/password', to: 'users#change_password'
 	post 'users/delete', to: 'users#delete'
-	post 'users/delete_dev', to: 'users#delete_dev'
+	post 'users/delete_dev', to: 'users#delete_dev' # Development env only
 
 	# Routes related to Posts
 	post 'posts', to: 'posts#index'
@@ -14,7 +15,7 @@ Rails.application.routes.draw do
 	post 'posts/view', to: 'posts#view'
 	post 'posts/edit', to: 'posts#edit'
 	post 'posts/delete', to: 'posts#delete'
-	get  'posts/dev', to: 'posts#dev'
+	get  'posts/dev', to: 'posts#dev' # Development env only
 	
 	# Routes related to Bookmarks
 	post 'bookmarks/new', to: 'bookmarks#new'

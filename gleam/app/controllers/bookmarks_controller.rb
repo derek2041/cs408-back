@@ -1,9 +1,14 @@
 class BookmarksController < ApplicationController
+	
+	# Route to create a new bookmark
 	def new
+
+		##########################################
 		# POST BODY PARAMETERS
 		# username
 		# password
 		# post_id
+		##########################################
 		
 		# Retrieve request body
 		data = JSON.parse(request.body.read)
@@ -36,7 +41,15 @@ class BookmarksController < ApplicationController
 		end
 	end
 
+	# Route to delete a user's bookmarked post
 	def delete
+
+		##########################################
+		# POST BODY PARAMETERS
+		# username
+		# password
+		# post_id
+		##########################################
 
 		# Retrieve Request Body
 		data = JSON.parse(request.body.read)
@@ -58,8 +71,15 @@ class BookmarksController < ApplicationController
 		return render json: message
 	end
 	
+	# DEV ROUTE - View a user's bookmarked posts for debugging
 	def view
-	
+
+		##########################################
+		# POST BODY PARAMETERS
+		# username
+		##########################################
+
+		# Only accessible on development environment
 		if Rails.env.development?
 			data = JSON.parse(request.body.read)
 			user = User.find_by(username: data["username"])
