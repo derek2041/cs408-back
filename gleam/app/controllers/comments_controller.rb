@@ -3,7 +3,9 @@ class CommentsController < ApplicationController
 	def index
 
 		###########################################
-		# POST BODY PARAMETERS		
+		# POST BODY PARAMETERS
+		# username - if my comments page
+		# password - if my comments page		
 		# post_id
 		# filter -> "Most Recent or Most Viewed"
 		# pageNumber
@@ -15,20 +17,33 @@ class CommentsController < ApplicationController
 		# Retrieve Post by id
 		post = Post.find_by(id: data["post_id"])
 		
-		# Retrieve Comments
-		comments = post.comments
-		count = comments.length
+		# Check if My Comments Page
+		comments = nil
+		count = 0
+		if data["post_id"] == -1
+			# Validate User and rerieve their comments
+			if User.is_validated(data)
+				comments = User.find_by(username: data["username"]).comments
+				count = comments.length
+			end
+			# TODO Add error message for wrong credentials
+	
+		else
+			# Not My Comments Page, retrieve all comments with matching post_id
+			comments = post.comments
+			count = comments.length
+		end
 
 		if data["filter"] == "Most Viewed"
 			
 			# Order Comments by Views
-			comments = post.comments.order('comment_views DESC').paginate(page: data["pageNumber"], per_page: 10)
+			comments = comments.order('comment_views DESC').paginate(page: data["pageNumber"], per_page: 10)
 			return render json: {count: count, comments: comments}
 
 		elsif data["filter"] == "Most Recent"
 
 			# Order Comments by Creation date
-			comments = post.comments.order('created_at DESC').paginate(page: data["pageNumber"], per_page: 10)	
+			comments = comments.order('created_at DESC').paginate(page: data["pageNumber"], per_page: 10)	
 			return render json: {count: count, comments: comments}
 		end	
 	end

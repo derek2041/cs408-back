@@ -23,3 +23,6 @@
 
 # Ignore Database Information
 /config/local_env.yml
+
+# Ignore testing script
+gleam_tests.sh

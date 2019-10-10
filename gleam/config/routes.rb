@@ -12,9 +12,19 @@ Rails.application.routes.draw do
 	post 'posts', to: 'posts#index'
 	post 'posts/new', to: 'posts#new'
 	post 'posts/view', to: 'posts#view'
+	post 'posts/edit', to: 'posts#edit'
+	post 'posts/delete', to: 'posts#delete'
 	get  'posts/dev', to: 'posts#dev'
 	
 	# Routes related to Bookmarks
 	post 'bookmarks/new', to: 'bookmarks#new'
-	post 'bookmarks/view', to: 'bookmarks#view'	
+	post 'bookmarks/delete', to: 'bookmarks#delete'
+	post 'bookmarks/view', to: 'bookmarks#view'
+
+	# Routes related to Comments
+	post 'comments', to: 'comments#index'
+	post 'comments/new', to: 'comments#new'
+	post 'comments/edit', to: 'comments#edit'
+	post 'comments/delete', to: 'comments#delete'
+	post 'comments/view', to: 'comments#view'	
 end
