@@ -273,6 +273,3 @@ class PostsController < ApplicationController
 		render json: Post.all
 	end
 end
-# DEFECTS
-# - Viewing post would not retrieve information unless user was logged in -> FIX: added check for null user to go through
-# - Additional edge case where nil username and password would not load page -> FIX: added check for nil fields to still retrieve post

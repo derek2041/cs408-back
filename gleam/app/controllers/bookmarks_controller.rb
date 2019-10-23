@@ -91,6 +91,3 @@ class BookmarksController < ApplicationController
 		end
 	end
 end
-
-# DEFECTS
-# - Can add multiple bookmarks of the same post -> FIX: added check in bookmark table for entry

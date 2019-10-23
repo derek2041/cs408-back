@@ -195,5 +195,3 @@ class UsersController < ApplicationController
 	end
 
 end
-# DEFECTS
-# is_validated function requires password field but payload sent old_password -> FIX: Modified payload
