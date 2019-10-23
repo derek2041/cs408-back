@@ -15,6 +15,13 @@ class UsersController < ApplicationController
 
 	# Create a new user
 	def new
+
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		# password
+		##########################################
+
 		# Retrieve request body
 		data = JSON.parse(request.body.read)
 
@@ -45,6 +52,13 @@ class UsersController < ApplicationController
 
 	# Login a user
 	def login
+
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		# password
+		##########################################
+
 		# Retrieve request body
 		data = JSON.parse(request.body.read)
 
@@ -74,4 +88,110 @@ class UsersController < ApplicationController
 			render json: message
 		end
 	end
+
+	def change_password
+		
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		# password
+		# new_password
+		##########################################
+
+		# Retrieve request body
+		data = JSON.parse(request.body.read)
+
+		# Validate User credentials
+		if User.is_validated(data)
+			
+			# Retrieve User object to update
+			user = User.find_by(username: data["username"])
+			
+			# Correct Credentials, hash new_password and update database	
+			new_hashed_password = BCrypt::Password.create data["new_password"]
+			
+			user.password = new_hashed_password
+			user.save
+
+			# Password updated, send success message
+			message = {status: "success", message: "Password changed successfully"}	
+			return render json: message
+
+		end
+		
+		# Incorrect Credentials, return error
+		message = {status: "error", message: "Incorrect Credentials"}
+		render json: message		
+	end
+
+
+	# Delete a User
+	def delete
+
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		# password
+		##########################################
+
+		data = JSON.parse(request.body.read)
+		user = User.find_by(username: data["username"])	
+	
+		# Validate User Credentials	
+		if User.is_validated(data)
+				
+			# Retrieve all the posts made by the user
+			posts = user.posts
+			
+			# For each post retrieve all bookmark references from the bookmarks table
+			posts.each do |p|
+				bookmarks = Bookmark.where(post_id: p.id)
+				
+				# Delete each bookmark reference to the post to be deleted
+				bookmarks.each do |b|
+					Bookmark.destroy(b.id)
+				end
+			end
+
+			# Delete the user, posts are destroyed with the dependent association
+			User.destroy(user.id)
+
+			message = {status: "success", message: "User deleted successfully"}
+			return render json: message
+		
+		else
+			message = {status: "error", message: "Incorrect Username or Password"}
+			return render json: message
+		end
+	end
+
+	# Delete a User (DEV ROUTE)
+	def delete_dev
+
+		###########################################
+		# POST BODY PARAMETERS		
+		# username
+		##########################################
+		
+		if Rails.env.development?
+			data = JSON.parse(request.body.read)
+			user = User.find_by(username: data["username"])
+			# User.destroy(user.id)
+
+			posts = user.posts
+			
+			posts.each do |p|
+				bookmarks = Bookmark.where(post_id: p.id)
+				bookmarks.each do |b|
+					Bookmark.destroy(b.id)
+				end				
+			end
+
+			User.destroy(user.id)
+
+			message = {status: "success", message: "User deleted successfully"}
+			return render json: message	
+		end
+	end
+
 end
